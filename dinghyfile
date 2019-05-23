@@ -10,14 +10,14 @@
             "name": "Canary Deployment",
             "parameterConfig": [
                 {
-                    "default": "1",
+                    "default": "10",
                     "description": "How many dev instances would you like?",
                     "label": "Number of Dev pods",
                     "name": "devcount",
                     "required": false
                 },
                 {
-                    "default": "3",
+                    "default": "30",
                     "description": "How many prod instances would you like?",
                     "label": "Number of Prod pods",
                     "name": "prodcount"
