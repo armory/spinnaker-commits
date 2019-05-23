@@ -1,0 +1,456 @@
+{
+    "application": "spinnakerCommits",
+    "deleteStalePipelines": true,
+    "pipelines": [
+        {
+            "keepWaitingPipelines": false,
+            "lastModifiedBy": "away168",
+            "limitConcurrent": true,
+            "name": "Canary Deployment",
+            "parameterConfig": [
+                {
+                    "default": "1",
+                    "description": "How many dev instances would you like?",
+                    "label": "Number of Dev pods",
+                    "name": "devcount",
+                    "required": false
+                },
+                {
+                    "default": "3",
+                    "description": "How many prod instances would you like?",
+                    "label": "Number of Prod pods",
+                    "name": "prodcount"
+                }
+            ],
+            "stages": [
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "comments": "This tag: ${trigger.tag} is being deployed.",
+                    "manifestArtifactAccount": "away168-github-artifact-account",
+                    "manifests": [
+                        {
+                            "apiVersion": "apps/v1",
+                            "kind": "Deployment",
+                            "metadata": {
+                                "labels": {
+                                    "app": "website"
+                                },
+                                "name": "website-dev",
+                                "namespace": "dev"
+                            },
+                            "spec": {
+                                "replicas": "${ #toInt( parameters.devcount ) }",
+                                "selector": {
+                                    "matchLabels": {
+                                        "app": "website"
+                                    }
+                                },
+                                "template": {
+                                    "metadata": {
+                                        "labels": {
+                                            "app": "website"
+                                        }
+                                    },
+                                    "spec": {
+                                        "containers": [
+                                            {
+                                                "image": "away168/mysite:${ trigger.tag}",
+                                                "name": "mysite",
+                                                "ports": [
+                                                    {
+                                                        "containerPort": 80
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "apiVersion": "v1",
+                            "kind": "Service",
+                            "metadata": {
+                                "name": "website-dev-service",
+                                "namespace": "dev"
+                            },
+                            "spec": {
+                                "ports": [
+                                    {
+                                        "port": 80,
+                                        "protocol": "TCP",
+                                        "targetPort": 80
+                                    }
+                                ],
+                                "selector": {
+                                    "app": "website"
+                                },
+                                "type": "LoadBalancer"
+                            }
+                        }
+                    ],
+                    "moniker": {
+                        "app": "spinnakercommit"
+                    },
+                    "name": "Deploy to GKE Dev",
+                    "notifications": [
+                        {
+                            "address": "andrew.way@armory.io",
+                            "level": "stage",
+                            "type": "email",
+                            "when": [
+                                "stage.starting",
+                                "stage.complete",
+                                "stage.failed"
+                            ]
+                        }
+                    ],
+                    "refId": "1",
+                    "relationships": {
+                        "loadBalancers": [],
+                        "securityGroups": []
+                    },
+                    "requisiteStageRefIds": [],
+                    "sendNotifications": true,
+                    "source": "text",
+                    "type": "deployManifest"
+                },
+                {
+                    "completeOtherBranchesThenFail": false,
+                    "continuePipeline": true,
+                    "failPipeline": false,
+                    "instructions": "Check canary",
+                    "judgmentInputs": [],
+                    "name": "Manual Judgment",
+                    "notifications": [],
+                    "overrideTimeout": true,
+                    "refId": "2",
+                    "requisiteStageRefIds": [
+                        "10"
+                    ],
+                    "stageTimeoutMs": 3600000,
+                    "type": "manualJudgment"
+                },
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "manifestArtifactAccount": "away168-github-artifact-account",
+                    "manifests": [
+                        {
+                            "apiVersion": "apps/v1",
+                            "kind": "Deployment",
+                            "metadata": {
+                                "labels": {
+                                    "app": "website"
+                                },
+                                "name": "website-prod",
+                                "namespace": "prod"
+                            },
+                            "spec": {
+                                "replicas": "${ #toInt( parameters.prodcount )  }",
+                                "selector": {
+                                    "matchLabels": {
+                                        "app": "website"
+                                    }
+                                },
+                                "template": {
+                                    "metadata": {
+                                        "labels": {
+                                            "app": "website"
+                                        }
+                                    },
+                                    "spec": {
+                                        "containers": [
+                                            {
+                                                "image": "away168/mysite:${trigger.tag}",
+                                                "name": "mysite",
+                                                "ports": [
+                                                    {
+                                                        "containerPort": 80
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "moniker": {
+                        "app": "spinnakercommit"
+                    },
+                    "name": "Deploy to GKE Prod",
+                    "refId": "4",
+                    "relationships": {
+                        "loadBalancers": [],
+                        "securityGroups": []
+                    },
+                    "requisiteStageRefIds": [
+                        "2"
+                    ],
+                    "source": "text",
+                    "stageEnabled": {
+                        "expression": "${ #stage('Canary Analysis')['status'].toString() == 'SUCCEEDED'}",
+                        "type": "expression"
+                    },
+                    "type": "deployManifest"
+                },
+                {
+                    "name": "Automated UI Test",
+                    "refId": "5",
+                    "requisiteStageRefIds": [
+                        "1"
+                    ],
+                    "type": "wait",
+                    "waitTime": 1
+                },
+                {
+                    "name": "Automated UI Test B",
+                    "refId": "6",
+                    "requisiteStageRefIds": [
+                        "1"
+                    ],
+                    "type": "wait",
+                    "waitTime": 1
+                },
+                {
+                    "name": "Notify team of deployment",
+                    "notifications": [
+                        {
+                            "level": "stage",
+                            "type": "githubStatus",
+                            "when": [
+                                "stage.starting"
+                            ]
+                        }
+                    ],
+                    "refId": "7",
+                    "requisiteStageRefIds": [
+                        "1"
+                    ],
+                    "sendNotifications": true,
+                    "type": "wait",
+                    "waitTime": 1
+                },
+                {
+                    "analysisType": "realTime",
+                    "canaryConfig": {
+                        "beginCanaryAnalysisAfterMins": "0",
+                        "canaryAnalysisIntervalMins": "1",
+                        "canaryConfigId": "5f26059c-068a-49d0-8a3d-b16afbceb2f1",
+                        "lifetimeDuration": "PT0H10M",
+                        "metricsAccountName": "datadog",
+                        "scopes": [
+                            {
+                                "controlScope": "kube_deployment:website-baseline",
+                                "experimentScope": "kube_deployment:website-canary",
+                                "extendedScopeParams": {},
+                                "scopeName": "default",
+                                "step": 10
+                            }
+                        ],
+                        "scoreThresholds": {
+                            "marginal": "60",
+                            "pass": "70"
+                        },
+                        "storageAccountName": "s3bucket"
+                    },
+                    "completeOtherBranchesThenFail": false,
+                    "continuePipeline": true,
+                    "failPipeline": false,
+                    "name": "Canary Analysis",
+                    "refId": "10",
+                    "requisiteStageRefIds": [
+                        "11",
+                        "12"
+                    ],
+                    "type": "kayentaCanary"
+                },
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "manifestArtifactAccount": "embedded-artifact",
+                    "manifests": [
+                        {
+                            "apiVersion": "apps/v1",
+                            "kind": "Deployment",
+                            "metadata": {
+                                "labels": {
+                                    "app": "website-baseline"
+                                },
+                                "name": "website-baseline",
+                                "namespace": "prod"
+                            },
+                            "spec": {
+                                "replicas": 1,
+                                "selector": {
+                                    "matchLabels": {
+                                        "app": "website"
+                                    }
+                                },
+                                "template": {
+                                    "metadata": {
+                                        "labels": {
+                                            "app": "website"
+                                        }
+                                    },
+                                    "spec": {
+                                        "containers": [
+                                            {
+                                                "image": "${#stage('Get Baseline Image').context[\"artifacts\"][0][\"reference\"]}",
+                                                "name": "mysite",
+                                                "ports": [
+                                                    {
+                                                        "containerPort": 80
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "moniker": {
+                        "app": "spinnakercommit"
+                    },
+                    "name": "Deploy Baseline",
+                    "refId": "11",
+                    "relationships": {
+                        "loadBalancers": [],
+                        "securityGroups": []
+                    },
+                    "requisiteStageRefIds": [
+                        "13"
+                    ],
+                    "source": "text",
+                    "type": "deployManifest"
+                },
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "manifestArtifactAccount": "embedded-artifact",
+                    "manifests": [
+                        {
+                            "apiVersion": "apps/v1",
+                            "kind": "Deployment",
+                            "metadata": {
+                                "labels": {
+                                    "app": "website-canary"
+                                },
+                                "name": "website-canary",
+                                "namespace": "prod"
+                            },
+                            "spec": {
+                                "replicas": 1,
+                                "selector": {
+                                    "matchLabels": {
+                                        "app": "website"
+                                    }
+                                },
+                                "template": {
+                                    "metadata": {
+                                        "labels": {
+                                            "app": "website"
+                                        }
+                                    },
+                                    "spec": {
+                                        "containers": [
+                                            {
+                                                "image": "away168/mysite:${ trigger.tag}",
+                                                "name": "mysite",
+                                                "ports": [
+                                                    {
+                                                        "containerPort": 80
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "moniker": {
+                        "app": "spinnakercommit"
+                    },
+                    "name": "Deploy Canary",
+                    "refId": "12",
+                    "relationships": {
+                        "loadBalancers": [],
+                        "securityGroups": []
+                    },
+                    "requisiteStageRefIds": [
+                        "13"
+                    ],
+                    "source": "text",
+                    "type": "deployManifest"
+                },
+                {
+                    "account": "gke-away",
+                    "app": "website",
+                    "cloudProvider": "kubernetes",
+                    "location": "prod",
+                    "manifestName": "deployment website-prod",
+                    "mode": "static",
+                    "name": "Get Baseline Image",
+                    "refId": "13",
+                    "requisiteStageRefIds": [
+                        "5",
+                        "6",
+                        "7"
+                    ],
+                    "type": "findArtifactsFromResource"
+                },
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "kinds": [],
+                    "labelSelectors": {
+                        "selectors": []
+                    },
+                    "location": "prod",
+                    "manifestName": "deployment website-canary",
+                    "name": "Clean-Up Canary",
+                    "options": {
+                        "cascading": true
+                    },
+                    "refId": "14",
+                    "requisiteStageRefIds": [
+                        "2"
+                    ],
+                    "type": "deleteManifest"
+                },
+                {
+                    "account": "gke-away",
+                    "cloudProvider": "kubernetes",
+                    "kinds": [],
+                    "location": "prod",
+                    "manifestName": "deployment website-baseline",
+                    "name": "Clean-Up Baseline",
+                    "options": {
+                        "cascading": true
+                    },
+                    "refId": "15",
+                    "requisiteStageRefIds": [
+                        "2"
+                    ],
+                    "type": "deleteManifest"
+                }
+            ],
+            "triggers": [
+                {
+                    "account": "docker-registry-away168",
+                    "enabled": false,
+                    "organization": "away168",
+                    "registry": "index.docker.io",
+                    "repository": "away168/mysite",
+                    "tag": "",
+                    "type": "docker"
+                }
+            ],
+            "updateTs": "1557261370000"
+        }
+    ]
+}
