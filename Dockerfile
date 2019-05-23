@@ -21,12 +21,10 @@ WORKDIR /opt/armory/build/
 ADD ./ /opt/armory/build/
 RUN make
 
-
 FROM alpine:3.9.4
 
 WORKDIR /opt/armory/bin/
 RUN apk update \
-	&& apk add --no-cache ca-certificates bash \
-	&& adduser -S krill
+	&& apk add --no-cache ca-certificates bash
 COPY --from=builder /opt/armory/build/build/spinnaker-commits /opt/armory/bin/spinnaker-commits
 CMD ["/opt/armory/bin/spinnaker-commits"]

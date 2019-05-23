@@ -9,22 +9,12 @@ GOARCH = amd64
 
 RELEASE_TYPE ?= patch
 
-CURRENT_VERSION := $(shell bin/current-version)
-
-ifndef CURRENT_VERSION
-	CURRENT_VERSION := 0.0.0
-endif
-
-NEXT_VERSION := $(shell semver -c -i $(RELEASE_TYPE) $(CURRENT_VERSION))
-DOCKER_NEXT_VERSION := $(shell docker run --rm alpine/semver semver -c -i $(RELEASE_TYPE) $(CURRENT_VERSION))
-
 PROJECT = github.com/armory/spinnaker-commits
-TAG=$(NEXT_VERSION)
-
 
 BUILD_DIR=$(shell pwd)/build
 COMMIT=$(shell git rev-parse HEAD)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+TAG=${COMMIT}
 #select all packages except a few folders because it's an integration test
 PKGS := $(shell go list ./... | grep -v -e /integration -e /vendor)
 CURRENT_DIR=$(shell pwd)
@@ -77,14 +67,3 @@ clean:
 	go clean
 
 .PHONY: lint linux darwin test vet fmt clean run
-
-current-version:
-	@echo $(CURRENT_VERSION)
-
-next-version:
-	@echo $(DOCKER_NEXT_VERSION)
-
-release:
-	git checkout master;
-	git tag $(DOCKER_NEXT_VERSION)
-	git push --tags --force
