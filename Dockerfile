@@ -10,10 +10,7 @@ RUN apk update && apk \
 		build-base \
 		gcc \
 		git \
-		make \
-		nodejs \
-		nodejs-npm \
-    && npm install -g semver@5.5.0
+		make 
 RUN go get -u golang.org/x/lint/golint
 
 ENV GO111MODULE=on GOFLAGS='-mod=vendor' GOOS=linux GOARCH=amd64
