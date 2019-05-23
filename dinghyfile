@@ -3,6 +3,7 @@
     "deleteStalePipelines": true,
     "pipelines": [
         {
+            "application": "spinnakerCommits",
             "keepWaitingPipelines": false,
             "lastModifiedBy": "away168",
             "limitConcurrent": true,
