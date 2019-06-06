@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: spinnaker-commits
-  namespace: demo
+  namespace: spinnaker
   annotations:
       strategy.spinnaker.io/max-version-history: "10"
 spec:
