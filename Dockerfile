@@ -26,4 +26,5 @@ RUN apk update \
 COPY --from=builder /opt/armory/build/build/spinnaker-commits /opt/armory/bin/spinnaker-commits
 COPY --from=builder /opt/armory/build/templates /opt/armory/bin/templates
 COPY --from=builder /opt/armory/build/data /opt/armory/bin/data
+
 CMD ["/opt/armory/bin/spinnaker-commits"]
