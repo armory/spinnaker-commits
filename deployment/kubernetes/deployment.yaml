@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spinnaker-commits
+  namespace: demo
+  annotations:
+      strategy.spinnaker.io/max-version-history: "10"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spinnaker-commits
+    spec:
+      containers:
+      - name: spinnaker-commits
+        image: docker.io/justinrlee/spinnaker-commits
+        resources:
+          limits:
+            cpu: "100m"
+            memory: "64Mi"

@@ -9,6 +9,19 @@
          <title>Welcome {{.Name}}</title>
    </head>
    <body>
-      <div class="welcome center">Welcome {{.Name}}, it is {{.Time}}</div>
+      <div>
+         <table class="welcome">
+            <tr>
+               <td>Author</td>
+               <td>Title</td>
+            </tr>
+            {{ range $key, $value := .Data }}
+            <tr>
+               <td>{{ index $value 1}}</td>
+               <td>{{ index $value 2}}</td>
+            </tr>
+            {{ end }}
+         </table>
+      </div>       
    </body>
 </html>

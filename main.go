@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -11,13 +14,22 @@ import (
 type Welcome struct {
 	Name string
 	Time string
+	Data [][]string
 }
 
 //Go application entrypoint
 func main() {
+	d := LoadData()
+	BubbleSort(d)
+	log.Print(d)
+
 	//Instantiate a Welcome struct object and pass in some random information.
 	//We shall get the name of the user as a query parameter from the URL
-	welcome := Welcome{"Anonymous", time.Now().Format(time.Stamp)}
+	welcome := Welcome{
+		"Anonymous",
+		time.Now().Format(time.Stamp),
+		d[:20],
+	}
 
 	//We tell Go exactly where we can find our html file. We ask Go to parse the html file (Notice
 	// the relative path). We wrap it in a call to template.Must() which handles any errors and halts if there are fatal errors
@@ -53,4 +65,23 @@ func main() {
 	//Print any errors from starting the webserver using fmt
 	fmt.Println("Listening")
 	fmt.Println(http.ListenAndServe(":8080", nil))
+}
+
+func BubbleSort(items [][]string) {
+	L := len(items)
+	for i := 0; i < L; i++ {
+		for j := 0; j < (L - 1 - i); j++ {
+			if items[j][1] > items[j+1][1] {
+				items[j], items[j+1] = items[j+1], items[j]
+			}
+		}
+	}
+
+}
+func LoadData() [][]string {
+	r, _ := os.Open("data/commits.csv")
+	cr := csv.NewReader(r)
+	records, _ := cr.ReadAll()
+	log.Print(len(records))
+	return records
 }
