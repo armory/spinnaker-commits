@@ -6,7 +6,7 @@ metadata:
   name: spinnaker-commits
   namespace: spinnaker
 spec:
-  replicas: 75
+  replicas: 2 
   revisionHistoryLimit: 5
   template:
     metadata:
