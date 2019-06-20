@@ -15,22 +15,11 @@ type Welcome struct {
 	Name string
 	Time string
 	Data [][]string
+	Hostname string
 }
 
 //Go application entrypoint
 func main() {
-	d := LoadData()
-	BubbleSort(d)
-	log.Print(d)
-
-	//Instantiate a Welcome struct object and pass in some random information.
-	//We shall get the name of the user as a query parameter from the URL
-	welcome := Welcome{
-		"Anonymous",
-		time.Now().Format(time.Stamp),
-		d[:20],
-	}
-
 	//We tell Go exactly where we can find our html file. We ask Go to parse the html file (Notice
 	// the relative path). We wrap it in a call to template.Must() which handles any errors and halts if there are fatal errors
 
@@ -49,7 +38,18 @@ func main() {
 
 	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		d := LoadData()
+		BubbleSort(d)
+		//Instantiate a Welcome struct object and pass in some random information.
+		//We shall get the name of the user as a query parameter from the URL
 
+		hostname, _ := os.Hostname()
+		welcome := Welcome{
+			"Anonymous",
+			time.Now().Format(time.Stamp),
+			d[:20],
+			hostname,
+		}
 		//Takes the name from the URL query e.g ?name=Martin, will set welcome.Name = Martin.
 		if name := r.FormValue("name"); name != "" {
 			welcome.Name = name

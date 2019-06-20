@@ -19,5 +19,5 @@ spec:
           name: spinnaker-commits
           resources:
             limits:
-              cpu: 50m
-              memory: 16Mi
+              cpu: 100m
+              memory: 32Mi
