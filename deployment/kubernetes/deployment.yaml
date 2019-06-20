@@ -4,7 +4,7 @@ metadata:
   annotations:
     strategy.spinnaker.io/max-version-history: '5'
   name: spinnaker-commits
-  namespace: spinnaker
+  namespace: dev
 spec:
   replicas: 75
   revisionHistoryLimit: 5

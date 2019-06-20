@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/managed-by: spinnaker
     app.kubernetes.io/name: commits
   name: spinnaker-commits-service
-  namespace: spinnaker
+  namespace: dev
 spec:
   ports:
     - port: 80
