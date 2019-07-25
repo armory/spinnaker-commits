@@ -83,6 +83,6 @@ func LoadData() [][]string {
 	cr := csv.NewReader(r)
 	records, _ := cr.ReadAll()
 	log.Print(len(records))
-	r.Close()
+	defer r.Close()
 	return records
 }
