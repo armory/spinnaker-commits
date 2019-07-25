@@ -41,7 +41,7 @@ func main() {
 		d, err := LoadData()
 
 		if err != nil {
-			fmt.Println("Error loading data")
+			fmt.Println("Error: Error loading data: " + err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -90,7 +90,7 @@ func LoadData() (records [][]string, err error) {
 	r, err := os.Open("data/commits.csv")
 	defer r.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error: %s", err.Error())
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func LoadData() (records [][]string, err error) {
 
 	records, err := cr.ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error: %s", err.Error())
 		return nil, err
 	}
 
