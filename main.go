@@ -42,6 +42,7 @@ func main() {
 
 		if err != nil {
 			fmt.Println("Error loading data")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
