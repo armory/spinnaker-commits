@@ -12,9 +12,9 @@ import (
 
 //Create a struct that holds information to be displayed in our HTML file
 type Welcome struct {
-	Name string
-	Time string
-	Data [][]string
+	Name     string
+	Time     string
+	Data     [][]string
 	Hostname string
 }
 
@@ -38,8 +38,16 @@ func main() {
 
 	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		d := LoadData()
+		d, err := LoadData()
+
+		if err != nil {
+			fmt.Println("Error: Error loading data: " + err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		BubbleSort(d)
+
 		//Instantiate a Welcome struct object and pass in some random information.
 		//We shall get the name of the user as a query parameter from the URL
 
@@ -76,12 +84,24 @@ func BubbleSort(items [][]string) {
 			}
 		}
 	}
-
 }
-func LoadData() [][]string {
-	r, _ := os.Open("data/commits.csv")
+
+func LoadData() (records [][]string, err error) {
+	r, err := os.Open("data/commits.csv")
+	defer r.Close()
+	if err != nil {
+		log.Printf("Error: %s", err.Error())
+		return nil, err
+	}
+
 	cr := csv.NewReader(r)
-	records, _ := cr.ReadAll()
+
+	records, err := cr.ReadAll()
+	if err != nil {
+		log.Printf("Error: %s", err.Error())
+		return nil, err
+	}
+
 	log.Print(len(records))
-	return records
+	return records, nil
 }
