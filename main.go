@@ -12,9 +12,9 @@ import (
 
 //Create a struct that holds information to be displayed in our HTML file
 type Welcome struct {
-	Name string
-	Time string
-	Data [][]string
+	Name     string
+	Time     string
+	Data     [][]string
 	Hostname string
 }
 
@@ -83,5 +83,6 @@ func LoadData() [][]string {
 	cr := csv.NewReader(r)
 	records, _ := cr.ReadAll()
 	log.Print(len(records))
+	r.Close()
 	return records
 }
