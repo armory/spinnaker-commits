@@ -38,8 +38,9 @@ func main() {
 
 	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		d := LoadData()
+		d, err := LoadData()
 		BubbleSort(d)
+
 		//Instantiate a Welcome struct object and pass in some random information.
 		//We shall get the name of the user as a query parameter from the URL
 
@@ -76,13 +77,26 @@ func BubbleSort(items [][]string) {
 			}
 		}
 	}
-
 }
-func LoadData() [][]string {
-	r, _ := os.Open("data/commits.csv")
+
+func LoadData() (records [][]string, err error) {
+	r, err1 := os.Open("data/commits.csv")
+	if err1 != nil {
+		defer r.Close()
+		log.Fatal(err1)
+		return nil, err1
+	}
+
 	cr := csv.NewReader(r)
-	records, _ := cr.ReadAll()
+
+	records, err2 := cr.ReadAll()
+	if err2 != nil {
+		defer r.Close()
+		log.Fatal(err2)
+		return nil, err2
+	}
+
 	log.Print(len(records))
 	defer r.Close()
-	return records
+	return records, nil
 }
