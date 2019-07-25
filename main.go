@@ -39,6 +39,12 @@ func main() {
 	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		d, err := LoadData()
+
+		if err != nil {
+			fmt.Println("Error loading data")
+			return
+		}
+
 		BubbleSort(d)
 
 		//Instantiate a Welcome struct object and pass in some random information.
@@ -80,23 +86,21 @@ func BubbleSort(items [][]string) {
 }
 
 func LoadData() (records [][]string, err error) {
-	r, err1 := os.Open("data/commits.csv")
-	if err1 != nil {
-		defer r.Close()
-		log.Fatal(err1)
-		return nil, err1
+	r, err := os.Open("data/commits.csv")
+	defer r.Close()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
 	}
 
 	cr := csv.NewReader(r)
 
-	records, err2 := cr.ReadAll()
-	if err2 != nil {
-		defer r.Close()
-		log.Fatal(err2)
-		return nil, err2
+	records, err := cr.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
 	}
 
 	log.Print(len(records))
-	defer r.Close()
 	return records, nil
 }
