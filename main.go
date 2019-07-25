@@ -86,7 +86,7 @@ func BubbleSort(items [][]string) {
 	}
 }
 
-func LoadData() (records [][]string, err error) {
+func LoadData() (rec [][]string, err error) {
 	r, err := os.Open("data/commits.csv")
 	defer r.Close()
 	if err != nil {
