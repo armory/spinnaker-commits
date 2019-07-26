@@ -49,7 +49,7 @@ func main() {
 		// LOOK HERE!!!
 		// Uncomment out the line when you want to sort the contents
 		// Comment it to return it to default state
-		// BubbleSort(d)
+		BubbleSort(d)
 
 		//Instantiate a Welcome struct object and pass in some random information.
 		//We shall get the name of the user as a query parameter from the URL
